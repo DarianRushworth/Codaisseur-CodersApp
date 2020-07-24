@@ -1,8 +1,10 @@
 import { combineReducers } from "redux";
 import postsReducer from "./posts/reducer";
+import postPageReducer from "./postPages/reducer";
 
 const reducer = combineReducers({
-  posts: postsReducer,
+  feed: postsReducer,
+  postPage: postPageReducer,
   // etc.
 });
 

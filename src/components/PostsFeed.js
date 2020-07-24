@@ -1,65 +1,57 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
+import { Link } from "react-router-dom"
 import moment from "moment";
-import "./PostFeed.css"
+import { selectPosts, isLoading } from "../store/posts/selector"
+import { useSelector, useDispatch } from "react-redux"
+import { fetch5MorePosts } from "../store/posts/actions"
 
-const postsUrl = `https://codaisseur-coders-network.herokuapp.com/posts`;
 
 export default function PostsFeed() {
-  const [data, setData] = useState({
-    loading: true,
-    posts: []
-  });
+  const dispatch = useDispatch()
+  const posts = useSelector(selectPosts)
+  // console.log("posts test", posts)
+  const loading = useSelector(isLoading)
+  // console.log("loading test", loading)
 
-  async function fetchNext5Posts() {
-    setData({ ...data, loading: true });
-    const response = await axios.get(`${postsUrl}?offset=${data.posts.length}&limit=5`)
-    // console.log("response test", response.data.rows)
-    // console.log("what is my data so far", data)
-    const morePosts = response.data.rows
-
-    setData({
-      loading: false,
-      posts: [...data.posts, ...morePosts]
-    });
-  }
 
   useEffect(() => {
-    fetchNext5Posts();
-  }, []);
+  dispatch(fetch5MorePosts)
+  }, [dispatch])
 
-  console.log("outside the function test", data)
-  const displayPosts = () => {
-    if(!data.loading){
-      return data.posts.map(post => {
-      return (
-        <div key={post.id}>
-          <h4>{post.title}</h4>
-          <p className="meta">
-            {moment(post.createdAt).format("DD-MM-YYYY")} &bull;{" "}
-          </p>
-          <span className="tags">
-            {post.tags.map(tag => {
-              return (
-                <React.Fragment key={tag.id}>
-                  <span className="Tag">{tag.tag}</span>
-                </React.Fragment>
-              )
-            })}
-          </span>
-        </div>
-      )
-    })
-    } else {
-      return <h1>Loading...</h1>
-    }
+  function fetchMore(){
+    dispatch(fetch5MorePosts)
   }
-
-
-  return (
-    <div className="PostsFeed">
-      <h2>Recent posts</h2>
-      {displayPosts()}
+ 
+  
+  const whatToDisplay = !loading
+                                ? posts.map(post => {
+                                    return (
+                                        <div key={post.id}>
+                                        <Link to={`/post/${post.id}`}>
+                                        <h3>{post.title}</h3>
+                                        </Link>
+                                          <p className="meta">
+                                        {moment(post.createdAt).format("DD-MM-YYYY")} &bull;{" "}
+                                          <span className="tags">
+                                        {post.tags.map(tag => {
+                                          return (
+                                            <React.Fragment key={tag.id}>
+                                            <span className="Tag">{tag.tag}</span>{" "}
+                                            </React.Fragment>
+                                              )
+                                        })}
+                                          </span>
+                                          </p>
+                                        </div>
+                                      )})
+                                : <h1>Loading...</h1>
+                                
+  
+  return(
+    <div className="Postsfeed">
+      <h2>Posts page</h2>
+      {whatToDisplay}
+      <button onClick={fetchMore}>More Posts Please</button>
     </div>
-  );
+  )
 }
